@@ -1,0 +1,10 @@
+Cliente: bob | Endereço IP: 25.46.141.209 | Data/Hora: 08-10-2023 21:43:18
+Cliente: alice | Endereço IP: 25.46.141.209 | Data/Hora: 08-10-2023 21:43:22
+Cliente: bobo | Endereço IP: 25.46.141.209 | Data/Hora: 08-10-2023 21:51:37
+Cliente: aline | Endereço IP: 25.46.141.209 | Data/Hora: 08-10-2023 21:51:40
+Cliente: ariana | Endereço IP: 25.46.141.209 | Data/Hora: 08-10-2023 22:05:21
+Cliente: grande | Endereço IP: 25.46.141.209 | Data/Hora: 08-10-2023 22:05:25
+Cliente: florzinha | Endereço IP: 25.46.141.209 | Data/Hora: 08-10-2023 22:06:50
+Cliente: docinho | Endereço IP: 25.46.141.209 | Data/Hora: 08-10-2023 22:06:53
+Cliente: sam | Endereço IP: 25.46.141.209 | Data/Hora: 08-10-2023 22:41:38
+Cliente: clover | Endereço IP: 25.46.141.209 | Data/Hora: 08-10-2023 22:41:43
