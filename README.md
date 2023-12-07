@@ -34,7 +34,9 @@ Siga as instruções no console da aplicação para interagir com o sistema banc
 
 Após interagir com a aplicação, encerre o programa e feche a conexão com o Neo4j.
 
-Observações:
+
+
+#### *Observações:*
 
 Certifique-se de que o Neo4j esteja em execução e acessível antes de iniciar a aplicação Java.
 
