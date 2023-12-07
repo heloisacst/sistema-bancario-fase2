@@ -18,7 +18,7 @@ git clone https://github.com/heloisacst/sistema-bancario-fase2.git
 ### 2. Configuração do Banco de Dados Neo4j:
 
 Inicie o Neo4j e certifique-se de que o banco de dados esteja em execução.
-Altere as configurações de conexão no código Java para refletir a sua instância do Neo4j (por exemplo, URL, usuário, senha).
+Altere as configurações de conexão no código Java no caminho `main > java connection` na classe `ConnectionManager` para refletir a sua instância do Neo4j (por exemplo, URL, usuário, senha).
 
 ### 3. Execução do programa:
 

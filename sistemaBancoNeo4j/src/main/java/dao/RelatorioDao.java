@@ -1,9 +1,9 @@
 package dao;
 
+import connection.ConnectionManager;
 import connection.RelatorioConnection;
 import org.neo4j.driver.Record;
 import org.neo4j.driver.Session;
-
 import java.util.List;
 import java.util.Scanner;
 
@@ -11,6 +11,16 @@ import java.util.Scanner;
 public class RelatorioDao {
     Scanner sc = new Scanner(System.in);
     private final RelatorioConnection relatorioConnection;
+
+    private static final ConnectionManager neo4jConnectionManager = new ConnectionManager();
+
+    public static Session getSession() {
+        return neo4jConnectionManager.getDriver().session();
+    }
+
+    public static void close() {
+        neo4jConnectionManager.close();
+    }
 
     public RelatorioDao(RelatorioConnection relatorioConnection) {
         this.relatorioConnection = relatorioConnection;
@@ -23,7 +33,7 @@ public class RelatorioDao {
         System.out.print("--> ");
         int op = sc.nextInt();
 
-        try (Session session = relatorioConnection.getDriver().session()) {
+        try (Session session = getSession()) {
             switch (op) {
                 case 1:
                     consultaTransacoes(session);
@@ -39,9 +49,7 @@ public class RelatorioDao {
 
     private void consultaTransacoes(Session session) {
         List<Record> records = session.readTransaction(tx ->
-                tx.run("MATCH (c:Cliente)-[:REALIZOU]->(t:Transacao)<-[:ORIGEM]-(cc:Conta) " +
-                                "RETURN c.nome AS nome, cc.nro_conta AS nroConta, cc.tipo_conta AS tipoConta, COUNT(t) AS quantidadeTransacoes " +
-                                "ORDER BY quantidadeTransacoes DESC")
+                tx.run("MATCH (cc:Conta)-[:PERTENCE_A]->(c:Cliente), (cc)-[:REALIZADA_POR]->(t:Transacao) RETURN c.nome AS nome, cc.nroConta AS nroConta, cc.tipoConta AS tipoConta, COUNT(t) AS quantidadeTransacoes ORDER BY quantidadeTransacoes DESC;")
                         .list());
 
         System.out.println("Relatório de Transações:");
@@ -55,27 +63,27 @@ public class RelatorioDao {
             long quantidadeTransacoes = record.get("quantidadeTransacoes").asLong();
 
             System.out.printf("%-20s %-15d %-20s %-15d\n", nome, nroConta, tipoConta, quantidadeTransacoes);
+            System.out.println();
         }
     }
 
     private void mostraContasClientes(Session session) {
         List<Record> records = session.readTransaction(tx ->
-                tx.run("MATCH (c:Cliente)-[:POSSUI]->(cc:Conta) " +
-                                "RETURN c.cpf AS cpf, cc.nro_conta AS nroConta, cc.tipo_conta AS tipoConta, c.nome AS nomeCliente " +
-                                "ORDER BY c.cpf")
+                tx.run("MATCH (conta:Conta)-[:PERTENCE_A]->(c:Cliente) RETURN c.cpf AS cpf, c.nome AS nomeCliente, conta.nroConta AS nroConta, conta.tipoConta AS tipoConta;")
                         .list());
 
         System.out.println("Relatório de Contas por cliente:");
-        System.out.printf("%-15s %-15s %-20s %-20s\n", "CPF", "Nro Conta", "Tipo Conta", "Cliente");
+        System.out.printf("%-15s %-15s %-20s %-20s\n", "CPF", "Nome Cliente", "Nro Conta", "Tipo Conta");
         System.out.println("---------------------------------------------------------------------");
 
         for (Record record : records) {
             String cpf = record.get("cpf").asString();
+            String nomeCliente = record.get("nomeCliente").asString();
             int nroConta = record.get("nroConta").asInt();
             String tipoConta = record.get("tipoConta").asString();
-            String nomeCliente = record.get("nomeCliente").asString();
 
             System.out.printf("%-15s %-15d %-20s %-20s\n", cpf, nroConta, tipoConta, nomeCliente);
+            System.out.println();
         }
     }
 }

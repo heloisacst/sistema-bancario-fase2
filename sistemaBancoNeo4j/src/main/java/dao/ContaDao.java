@@ -1,6 +1,5 @@
 package dao;
 
-import connection.ClienteConnection;
 import connection.ContaConnection;
 import enums.TipoConta;
 
@@ -11,11 +10,11 @@ import java.util.Scanner;
 import org.neo4j.driver.*;
 import org.neo4j.driver.Record;
 import org.neo4j.driver.exceptions.ClientException;
+import org.neo4j.driver.exceptions.NoSuchRecordException;
 
 public class ContaDao {
     Scanner sc = new Scanner(System.in);
     ContaConnection contaCon = new ContaConnection();
-    ClienteConnection clienteCon = new ClienteConnection();
 
     public void administrarConta(){
         System.out.println("***************************************************************");
@@ -60,32 +59,36 @@ public class ContaDao {
         String tipoConta = sc.nextLine();
         LocalDateTime dataAbertura = LocalDateTime.now();
 
-        // Antes de cadastrar a conta, verificar se o cliente existe
-        if (clienteExiste(cpfCliente)) {
-            contaCon.cadastrarConta(nro_conta, 0001, tipoConta, dataAbertura, 0.0);
-          //  clienteCon.associarClienteConta(cpfCliente, nro_conta);
-            clienteCon.criarRelacaoContaCliente(cpfCliente, nro_conta);
-        } else {
-            System.out.println("Cliente não encontrado. A conta não pode ser criada.");
-        }
+        contaCon.cadastrarConta(nro_conta, 0001, tipoConta, dataAbertura, 0.0, cpfCliente);
+        //associarContaCliente(cpfCliente, nro_conta);
     }
 
-    private boolean clienteExiste(String cpf) {
+    /*public void associarContaCliente(String cpf, int nroConta) {
         try (Session session = contaCon.getSession()) {
-            Result result = session.run(
-                    "MATCH (c:Cliente {cpf: $cpf}) RETURN c",
-                    Map.of("cpf", cpf)
-            );
+            session.writeTransaction(tx -> {
+                Result result = tx.run(
+                        "MATCH (p:Pessoa {cpf: $cpf}), (c:Conta {nroConta: $nroConta}) " +
+                                "CREATE (p)-[:POSSUI_CONTA]->(c)",
+                        Map.of("cpf", cpf, "nroConta", nroConta)
+                );
 
-            return result.hasNext();
+                if (result.hasNext()) {
+                    Record record = result.next();
+                    System.out.println("Relacionamento criado com sucesso!");
+                } else {
+                    System.out.println("Não foi possível criar o relacionamento. Verifique se os nós existem.");
+                }
+
+                return null;
+            });
+        } catch (ClientException ce) {
+            System.out.println("Erro no Neo4j: " + ce.getMessage());
+            ce.printStackTrace();
         } catch (Exception e) {
-            System.out.println("Erro ao verificar a existência do cliente.");
+            System.out.println("Erro desconhecido: " + e.getMessage());
             e.printStackTrace();
-            return false;
         }
-    }
-
-
+    }*/
 
     private void consultarConta() {
         System.out.print("Informe o número da conta que deseja consultar: ");
@@ -123,9 +126,11 @@ public class ContaDao {
 
     public void atualizaSaldo(int nroConta, double novoSaldo) {
         try (Session session = contaCon.getSession()) {
-            session.writeTransaction(tx -> tx.run(
-                    "MATCH (c:Conta {nroConta: $nroConta}) SET c.saldo = $novoSaldo",
-                    Map.of("nroConta", nroConta, "novoSaldo", novoSaldo)));
+            session.writeTransaction(tx -> {
+                tx.run("MATCH (c:Conta {nroConta: $nroConta}) SET c.saldo = $novoSaldo",
+                        Map.of("nroConta", nroConta, "novoSaldo", novoSaldo));
+                return null;
+            });
             System.out.println("Saldo atualizado com sucesso!");
         } catch (Exception e) {
             System.out.println("Falha ao atualizar o saldo da conta.");
@@ -133,11 +138,12 @@ public class ContaDao {
         }
     }
 
-    public double retornaSaldo(String cpf) {
+
+    public double retornaSaldo(Integer nroConta) {
         try (Session session = contaCon.getSession()) {
             Record record = session.readTransaction(tx -> tx.run(
-                            "MATCH (p:Pessoa {cpf: $cpf})-[:POSSUI]->(c:Conta) RETURN c.saldo",
-                            Map.of("cpf", cpf))
+                            "MATCH (c:Conta {nroConta: $nroConta}) RETURN c.saldo",
+                            Map.of("nroConta", nroConta))
                     .single());
 
             Value saldoValue = record.get("c.saldo");
@@ -152,18 +158,20 @@ public class ContaDao {
     public int retornaNroConta(String cpf) {
         try (Session session = contaCon.getSession()) {
             Record record = session.readTransaction(tx -> tx.run(
-                            "MATCH (p:Pessoa {cpf: $cpf})-[:POSSUI_CONTA]->(c:Conta) RETURN c.nroConta",
+                            "MATCH (cliente:Cliente {cpf: $cpf})<-[:PERTENCE_A]-(conta:Conta) RETURN conta.nroConta",
                             Map.of("cpf", cpf))
                     .single());
 
-            Value nroContaValue = record.get("c.nroConta");
+            Value nroContaValue = record.get("conta.nroConta");
             return nroContaValue != null ? nroContaValue.asInt() : 0;
+        } catch (NoSuchRecordException e) {
+            System.out.println("Cliente com CPF " + cpf + " não está vinculado a uma Conta.");
+            return 0;
         } catch (Exception e) {
-            System.out.println("Falha ao obter o número da conta para o CPF: " + cpf);
+            System.out.println("Falha ao obter o número da conta.");
             e.printStackTrace();
             return 0;
         }
     }
-
 
 }

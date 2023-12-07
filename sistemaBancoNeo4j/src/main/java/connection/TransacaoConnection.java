@@ -18,7 +18,7 @@ import static org.neo4j.driver.Values.parameters;
 
 public class TransacaoConnection {
 
-    private static final Neo4jConnectionManager neo4jConnectionManager = new Neo4jConnectionManager();
+    private static final ConnectionManager neo4jConnectionManager = new ConnectionManager();
 
     public static Session getSession() {
         return neo4jConnectionManager.getDriver().session();

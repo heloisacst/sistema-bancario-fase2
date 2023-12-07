@@ -4,7 +4,7 @@ import org.neo4j.driver.AuthTokens;
 import org.neo4j.driver.Driver;
 import org.neo4j.driver.GraphDatabase;
 
-public class Neo4jConnectionManager {
+public class ConnectionManager {
 
     private static final String URI = "bolt://localhost:7687";
     private static final String USER = "neo4j";

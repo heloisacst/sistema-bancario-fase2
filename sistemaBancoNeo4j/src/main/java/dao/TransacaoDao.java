@@ -53,20 +53,19 @@ public class TransacaoDao {
     private void efetuarDeposito() {
         System.out.print("Informe o valor do depósito: R$ ");
         double valorDeposito = sc.nextDouble();
-        sc.nextLine(); // Consumir a quebra de linha pendente
+        sc.nextLine();
 
-        System.out.print("Informe o CPF: ");
+        System.out.print("Informe o CPF da conta: ");
         String cpf = sc.nextLine();
-
         LocalDateTime dth_transacao = LocalDateTime.now();
-        String tipoTransacao = TipoTransacao.DEPOSITO.toString();
+        String tipoTransacaoSql = TipoTransacao.DEPOSITO.toString();
 
         transacao.cadastrarTransacao(dth_transacao, valorDeposito, TipoTransacao.DEPOSITO);
         int contaTransacao = contaDao.retornaNroConta(cpf);
 
-        efetivaTransacao(dth_transacao, tipoTransacao, contaTransacao, 0);
+        transacaoConnection.efetuaTransacao(dth_transacao, valorDeposito, tipoTransacaoSql, contaTransacao, 0);
 
-        double saldoAtual = contaDao.retornaSaldo(cpf);
+        double saldoAtual = contaDao.retornaSaldo(contaTransacao);
         saldoAtual += valorDeposito;
         contaDao.atualizaSaldo(contaTransacao, saldoAtual);
 
@@ -76,18 +75,18 @@ public class TransacaoDao {
     private void efetuarSaque() {
         System.out.print("Informe o valor do saque: R$ ");
         double valorSaque = sc.nextDouble();
-        sc.nextLine(); // Consumir a quebra de linha pendente
+        sc.nextLine();
 
         System.out.print("Informe o CPF: ");
         String cpf = sc.nextLine();
 
         LocalDateTime dth_transacao = LocalDateTime.now();
-        String tipoTransacao = TipoTransacao.SAQUE.toString();
+        String tipoTransacaoSql = TipoTransacao.SAQUE.toString();
 
         transacao.cadastrarTransacao(dth_transacao, valorSaque, TipoTransacao.SAQUE);
         int contaTransacao = contaDao.retornaNroConta(cpf);
 
-        double saldoAtual = contaDao.retornaSaldo(cpf);
+        double saldoAtual = contaDao.retornaSaldo(contaTransacao);
         saldoAtual -= valorSaque;
 
         if (saldoAtual < 0) {
@@ -96,7 +95,7 @@ public class TransacaoDao {
         }
 
         contaDao.atualizaSaldo(contaTransacao, saldoAtual);
-        efetivaTransacao(dth_transacao, tipoTransacao, contaTransacao, 0);
+        transacaoConnection.efetuaTransacao(dth_transacao, valorSaque, tipoTransacaoSql, contaTransacao, 0);
 
         System.out.println("Saque realizado com sucesso!");
     }
@@ -104,7 +103,7 @@ public class TransacaoDao {
     private void efetuarTransferencia() {
         System.out.print("Informe o valor da transferência: R$ ");
         double valorTransferencia = sc.nextDouble();
-        sc.nextLine(); // Consumir a quebra de linha pendente
+        sc.nextLine();
 
         System.out.print("Informe o CPF: ");
         String cpf = sc.nextLine();
@@ -114,11 +113,11 @@ public class TransacaoDao {
         int contaDestino = sc.nextInt();
 
         LocalDateTime dth_transacao = LocalDateTime.now();
-        String tipoTransacao = TipoTransacao.TRANSFERENCIA.toString();
+        String tipoTransacaoSql = TipoTransacao.TRANSFERENCIA.toString();
 
         transacao.cadastrarTransacao(dth_transacao, valorTransferencia, TipoTransacao.TRANSFERENCIA);
 
-        double saldoAtual = contaDao.retornaSaldo(cpf);
+        double saldoAtual = contaDao.retornaSaldo(contaTransacao);
         saldoAtual -= valorTransferencia;
 
         if (saldoAtual < 0) {
@@ -127,22 +126,24 @@ public class TransacaoDao {
         }
 
         contaDao.atualizaSaldo(contaTransacao, saldoAtual);
-        efetivaTransacao(dth_transacao, tipoTransacao, contaTransacao, contaDestino);
+        transacaoConnection.efetuaTransacao(dth_transacao, valorTransferencia, tipoTransacaoSql, contaTransacao, contaDestino);
 
         System.out.println("Transferência realizada com sucesso!");
     }
 
     private void consultarSaldo() {
+        sc.nextLine();
         System.out.print("Informe o CPF: ");
         String cpf = sc.nextLine();
         int contaTransacao = contaDao.retornaNroConta(cpf);
 
-        double saldoAtual = contaDao.retornaSaldo(cpf);
+        double saldoAtual = contaDao.retornaSaldo(contaTransacao);
         System.out.println("Saldo atual da conta: R$ " + saldoAtual);
     }
 
     private void gerarExtrato() {
         System.out.print("Informe o CPF: ");
+        sc.nextLine();
         String cpf = sc.nextLine();
         int contaTransacao = contaDao.retornaNroConta(cpf);
 
@@ -155,7 +156,4 @@ public class TransacaoDao {
         }
     }
 
-    private void efetivaTransacao(LocalDateTime dth_transacao, String tipoTransacao, int contaTransacao, int contaDestino) {
-        transacaoConnection.efetuaTransacao(dth_transacao, transacao.getValor_transacao(), tipoTransacao, contaTransacao, contaDestino);
-    }
 }
