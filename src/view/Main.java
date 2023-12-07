@@ -31,11 +31,11 @@ public class Main {
                     ClienteDao administrarCliente = new ClienteDao();
                     administrarCliente.administrarCliente();
                     break;
-                /*case 3:
+                case 3:
                     ContaDao administrarConta = new ContaDao();
                     administrarConta.administrarConta();
                     break;
-                case 4:
+                /*case 4:
                     usuarioDao.administrarUsuario();
                     break;
                 case 5:
