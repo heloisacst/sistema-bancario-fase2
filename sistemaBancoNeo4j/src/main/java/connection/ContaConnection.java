@@ -1,63 +1,51 @@
 package connection;
 
 import enums.TipoConta;
-import model.Conta;
-import org.neo4j.driver.*;
-import org.neo4j.driver.types.Node;
-
-
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-
-import org.neo4j.driver.AuthTokens;
-import org.neo4j.driver.Driver;
-import org.neo4j.driver.GraphDatabase;
 import org.neo4j.driver.Session;
 import org.neo4j.driver.Record;
 import java.util.Map;
 
 public class ContaConnection {
 
-
-    private static final String URI = "bolt://localhost:7687";
-    private static final String USER = "neo4j";
-    private static final String PASSWORD = "12345678";
-
-
-
-    private static Driver driver;
-
-    static {
-        initialize();
-    }
-
-    private static void initialize() {
-        driver = GraphDatabase.driver(URI, AuthTokens.basic(USER, PASSWORD));
-    }
+    private static final Neo4jConnectionManager neo4jConnectionManager = new Neo4jConnectionManager();
 
     public static Session getSession() {
-        return driver.session();
+        return neo4jConnectionManager.getDriver().session();
     }
 
     public static void close() {
-        driver.close();
+        neo4jConnectionManager.close();
     }
 
-    public void cadastrarConta(Integer nro_conta, Integer agencia, String tipo_conta, LocalDateTime data_abertura, Double saldo) {
+    public void cadastrarConta(Integer nro_conta, Integer agencia, String tipo_conta, LocalDateTime data_abertura, Double saldo, String cpfCliente) {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss");
 
         try (Session session = getSession()) {
             session.writeTransaction(tx -> {
-                tx.run("CREATE (u:Conta {nroConta: $nroConta, agencia: $agencia, tipoConta: $tipoConta, dataAbertura: $dataAbertura, saldo: $saldo})",
-                        Map.of("nroConta", nro_conta, "agencia", agencia, "tipoConta", tipo_conta, "dataAbertura", data_abertura.format(formatter), "saldo", saldo));
+                boolean clienteExists = tx.run("MATCH (c:Cliente {cpf: $cpf}) RETURN count(c) > 0", Map.of("cpf", cpfCliente))
+                        .single()
+                        .get(0)
+                        .asBoolean();
+
+                if (!clienteExists) {
+                    System.out.println("Não existe cliente com esse CPF!");
+                } else {
+                    tx.run("MATCH (c:Cliente {cpf: $cpf}) " +
+                                    "CREATE (u:Conta {nroConta: $nroConta, agencia: $agencia, tipoConta: $tipoConta, dataAbertura: $dataAbertura, saldo: $saldo})-[:PERTENCE_A]->(c)",
+                            Map.of("nroConta", nro_conta, "agencia", agencia, "tipoConta", tipo_conta, "dataAbertura", data_abertura.format(formatter), "saldo", saldo, "cpf", cpfCliente));
+                    System.out.println("Conta cadastrada com sucesso!");
+                }
                 return null;
             });
-            System.out.println("Conta cadastrada com sucesso!");
         } catch (Exception e) {
             e.printStackTrace();
             System.out.println("Falha ao cadastrar Conta");
         }
     }
+
+
     public void consultarConta(int nro_conta) {
         try (Session session = getSession()) {
             Record record = session.readTransaction(tx -> tx.run(

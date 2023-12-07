@@ -8,28 +8,16 @@ import java.util.Map;
 
 public class ClienteConnection {
 
-    private static final String URI = "bolt://localhost:7687";
-    private static final String USER = "neo4j";
-    private static final String PASSWORD = "12345678";
-
-    private static Driver driver;
-
-    static {
-        initialize();
-    }
-
-    private static void initialize() {
-
-        driver = GraphDatabase.driver(URI, AuthTokens.basic(USER, PASSWORD));
-    }
+    private static final Neo4jConnectionManager neo4jConnectionManager = new Neo4jConnectionManager();
 
     public static Session getSession() {
-        return driver.session();
+        return neo4jConnectionManager.getDriver().session();
     }
 
     public static void close() {
-        driver.close();
+        neo4jConnectionManager.close();
     }
+
     public void consultarDadosCliente(String cpf) {
         try (Session session = getSession()) {
             Record record = session.readTransaction(tx -> tx.run(
