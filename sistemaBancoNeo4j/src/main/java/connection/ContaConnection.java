@@ -120,6 +120,6 @@ public class ContaConnection {
             e.printStackTrace();
             System.out.println("Falha ao atualizar os dados da conta.");
         }
-    }////// ta dando exceção: depois que atualiza uma conta, para consultar a conta atualizada.
+    }
 
 }

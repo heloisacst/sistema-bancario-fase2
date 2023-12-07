@@ -1,7 +1,17 @@
 package dao;
 
 import connection.ClienteConnection;
+import connection.ContaConnection;
 import model.Cliente;
+import org.neo4j.driver.Result;
+import org.neo4j.driver.Session;
+import org.neo4j.driver.AuthTokens;
+import org.neo4j.driver.Driver;
+import org.neo4j.driver.GraphDatabase;
+import org.neo4j.driver.Record;
+
+import java.time.LocalDateTime;
+import java.util.Map;
 
 import java.util.Scanner;
 
@@ -9,6 +19,7 @@ public class ClienteDao {
     Scanner sc = new Scanner(System.in);
     public Cliente cliente = new Cliente();
     ClienteConnection connection = new ClienteConnection();
+    ContaConnection contaCon = new ContaConnection();
 
     public void administrarCliente(){
         System.out.println("***************************************************************");
@@ -17,7 +28,7 @@ public class ClienteDao {
         System.out.println("(2) Cadastrar um cliente");
         System.out.println("(3) Atualizar dados de cliente");
         System.out.println("(4) Excluir um cliente");
-        System.out.print("(0) VOLTAR tela anterior ");
+        System.out.println("(0) VOLTAR tela anterior ");
         System.out.print("---> ");
         int op = sc.nextInt();
 
@@ -38,6 +49,37 @@ public class ClienteDao {
         }
 
     }
+    /*
+    public void cadastrarCliente() {
+        System.out.println("----CADASTRO DE CLIENTE E CONTA----");
+        sc.nextLine();
+        System.out.print("Número do CPF: ");
+        String cpf = sc.nextLine();
+        System.out.print("Nome completo: ");
+        String nome = sc.nextLine();
+        System.out.print("Telefone: ");
+        String telefone = sc.nextLine();
+        System.out.print("E-mail: ");
+        String email = sc.nextLine();
+        cpf = cpf.replaceAll("[^0-9]", "");
+
+        System.out.print("Tipo da Conta (CONTA_CORRENTE, CONTA_POUPANCA, CONTA_SALARIO): ");
+        String tipoConta = sc.nextLine().toUpperCase();
+
+        // Criação do cliente
+        cliente.cadastrarCliente(cpf, nome, telefone, email);
+        connection.cadastrarCliente(cliente.getCpf(), cliente.getNome(), cliente.getTelefone(), cliente.getEmail());
+
+        // Criação da conta
+        int nroConta = 1010; // Você pode gerar um número de conta automaticamente ou pedir ao usuário
+        contaCon.cadastrarConta(nroConta, 0001, tipoConta, LocalDateTime.now(), 0.0);
+
+        // Associação do cliente com a conta
+        connection.criar(cpf, nroConta);
+    }*/
+
+
+
 
     private void cadastrarCliente(){
         System.out.println("----CADASTRO DE CLIENTE----");

@@ -59,12 +59,12 @@ public class TransacaoDao {
         String cpf = sc.nextLine();
 
         LocalDateTime dth_transacao = LocalDateTime.now();
-        String tipoTransacaoSql = TipoTransacao.DEPOSITO.toString();
+        String tipoTransacao = TipoTransacao.DEPOSITO.toString();
 
         transacao.cadastrarTransacao(dth_transacao, valorDeposito, TipoTransacao.DEPOSITO);
         int contaTransacao = contaDao.retornaNroConta(cpf);
 
-        efetivaTransacao(dth_transacao, tipoTransacaoSql, contaTransacao, 0);
+        efetivaTransacao(dth_transacao, tipoTransacao, contaTransacao, 0);
 
         double saldoAtual = contaDao.retornaSaldo(cpf);
         saldoAtual += valorDeposito;
@@ -82,7 +82,7 @@ public class TransacaoDao {
         String cpf = sc.nextLine();
 
         LocalDateTime dth_transacao = LocalDateTime.now();
-        String tipoTransacaoSql = TipoTransacao.SAQUE.toString();
+        String tipoTransacao = TipoTransacao.SAQUE.toString();
 
         transacao.cadastrarTransacao(dth_transacao, valorSaque, TipoTransacao.SAQUE);
         int contaTransacao = contaDao.retornaNroConta(cpf);
@@ -96,7 +96,7 @@ public class TransacaoDao {
         }
 
         contaDao.atualizaSaldo(contaTransacao, saldoAtual);
-        efetivaTransacao(dth_transacao, tipoTransacaoSql, contaTransacao, 0);
+        efetivaTransacao(dth_transacao, tipoTransacao, contaTransacao, 0);
 
         System.out.println("Saque realizado com sucesso!");
     }
@@ -114,7 +114,7 @@ public class TransacaoDao {
         int contaDestino = sc.nextInt();
 
         LocalDateTime dth_transacao = LocalDateTime.now();
-        String tipoTransacaoSql = TipoTransacao.TRANSFERENCIA.toString();
+        String tipoTransacao = TipoTransacao.TRANSFERENCIA.toString();
 
         transacao.cadastrarTransacao(dth_transacao, valorTransferencia, TipoTransacao.TRANSFERENCIA);
 
@@ -127,7 +127,7 @@ public class TransacaoDao {
         }
 
         contaDao.atualizaSaldo(contaTransacao, saldoAtual);
-        efetivaTransacao(dth_transacao, tipoTransacaoSql, contaTransacao, contaDestino);
+        efetivaTransacao(dth_transacao, tipoTransacao, contaTransacao, contaDestino);
 
         System.out.println("Transferência realizada com sucesso!");
     }
@@ -155,7 +155,7 @@ public class TransacaoDao {
         }
     }
 
-    private void efetivaTransacao(LocalDateTime dth_transacao, String tipoTransacaoSql, int contaTransacao, int contaDestino) {
-        transacaoConnection.efetuaTransacao(dth_transacao, transacao.getValor_transacao(), tipoTransacaoSql, contaTransacao, contaDestino);
+    private void efetivaTransacao(LocalDateTime dth_transacao, String tipoTransacao, int contaTransacao, int contaDestino) {
+        transacaoConnection.efetuaTransacao(dth_transacao, transacao.getValor_transacao(), tipoTransacao, contaTransacao, contaDestino);
     }
 }

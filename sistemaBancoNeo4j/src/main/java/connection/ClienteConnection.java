@@ -1,10 +1,9 @@
 package connection;
 
-import org.neo4j.driver.AuthTokens;
-import org.neo4j.driver.Driver;
-import org.neo4j.driver.GraphDatabase;
+import org.neo4j.driver.*;
 import org.neo4j.driver.Record;
-import org.neo4j.driver.Session;
+import org.neo4j.driver.exceptions.ClientException;
+
 import java.util.Map;
 
 public class ClienteConnection {
@@ -95,6 +94,41 @@ public class ClienteConnection {
         } catch (Exception e) {
             e.printStackTrace();
             System.out.println("Falha ao excluir o cliente.");
+        }
+    }
+
+    public void criarRelacaoContaCliente(String cpf, int nroConta) {
+        try (Session session = getSession()) {
+            String query = "MATCH (c:Cliente {cpf: $cpf}), (conta:Conta {nroConta: $nroConta}) " +
+                    "CREATE (c)-[:POSSUI_CONTA]->(conta), (conta)-[:PERTENCE_AO_CLIENTE]->(c)";
+            session.run(query, Values.parameters("cpf", cpf, "nroConta", nroConta));
+        }
+    }
+
+    public void associarClienteConta(String cpf, int nroConta) {
+        try (Session session = getSession()) {
+            session.writeTransaction(tx -> {
+                Result result = tx.run(
+                        "MATCH (p:Pessoa {cpf: $cpf}), (c:Conta {nroConta: $nroConta}) " +
+                                "CREATE (p)-[:POSSUI_CONTA]->(c)",
+                        Map.of("cpf", cpf, "nroConta", nroConta)
+                );
+
+                if (result.hasNext()) {
+                    Record record = result.next();
+                    System.out.println("Cliente associado à conta com sucesso!");
+                } else {
+                    System.out.println("Não foi possível associar o cliente à conta. Verifique se os nós existem.");
+                }
+
+                return null;
+            });
+        } catch (ClientException ce) {
+            System.out.println("Erro no Neo4j: " + ce.getMessage());
+            ce.printStackTrace();
+        } catch (Exception e) {
+            System.out.println("Erro desconhecido: " + e.getMessage());
+            e.printStackTrace();
         }
     }
 }
