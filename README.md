@@ -13,7 +13,7 @@ Passos:
 Clone o repositório que contém o código-fonte da aplicação bancária.
 
 ```
-git clone https://github.com/heloisacst/sistema-bancario-fase2.git
+git clone -b neo4j https://github.com/heloisacst/sistema-bancario-fase2.git
 ``` 
 ### 2. Configuração do Banco de Dados Neo4j:
 
