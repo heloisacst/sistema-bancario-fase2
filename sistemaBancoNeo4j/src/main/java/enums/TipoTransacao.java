@@ -4,5 +4,5 @@ public enum TipoTransacao {
     DEPOSITO,
     SAQUE,
     TRANSFERENCIA,
-    ENVIAR
+    UNKNOWN, ENVIAR
 }

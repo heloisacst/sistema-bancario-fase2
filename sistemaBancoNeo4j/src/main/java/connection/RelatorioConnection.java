@@ -1,32 +1,19 @@
 package connection;
 
-import org.neo4j.driver.AuthTokens;
-import org.neo4j.driver.Driver;
-import org.neo4j.driver.GraphDatabase;
+import org.neo4j.driver.Session;
 
 public class RelatorioConnection {
-    private static final String URI = "bolt://localhost:7687";
-    private static final String USER = "neo4j";
-    private static final String PASSWORD = "12345678";
+    private static final Neo4jConnectionManager neo4jConnectionManager = new Neo4jConnectionManager();
 
-    private static Driver driver;
+    public static Session getSession() {
+        return neo4jConnectionManager.getDriver().session();
+    }
 
-    static {
-        initialize();
+    public static void close() {
+        neo4jConnectionManager.close();
     }
 
     public RelatorioConnection() {
     }
 
-    private static void initialize() {
-        driver = GraphDatabase.driver(URI, AuthTokens.basic(USER, PASSWORD));
-    }
-
-    public static Driver getDriver() {
-        return driver;
-    }
-
-    public static void close() {
-        driver.close();
-    }
 }
